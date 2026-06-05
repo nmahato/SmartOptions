@@ -40,6 +40,6 @@ export class ApiService {
   }
 
   getStocks(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/options/stocks/`, { headers: this.getHeaders() });
+    return this.http.get(`${this.baseUrl}/options/stocks-list/`, { headers: this.getHeaders() });
   }
 }

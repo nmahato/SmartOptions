@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS dev;
 SET search_path TO dev;
 
 -- Create user
-CREATE USER user05 WITH PASSWORD 'Forest@21163';
+CREATE USER user05 WITH PASSWORD 'smartoptions_dev_password';
 GRANT ALL PRIVILEGES ON DATABASE smartoptions TO user05;
 GRANT USAGE, CREATE ON SCHEMA dev TO user05;
 

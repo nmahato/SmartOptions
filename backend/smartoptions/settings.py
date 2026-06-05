@@ -58,25 +58,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'smartoptions.wsgi.application'
 
-# Use SQLite for local development, PostgreSQL for production
-if config('DB_HOST', default='localhost') == 'localhost':
+# Use SQLite when explicitly requested or when no database host is configured.
+# Use PostgreSQL for local Docker, local Postgres, and production.
+DB_HOST = config('DB_HOST', default='')
+DB_ENGINE = config('DB_ENGINE', default='postgres' if DB_HOST else 'sqlite').lower()
+
+if DB_ENGINE in ('sqlite', 'sqlite3'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'NAME': config('SQLITE_NAME', default=os.path.join(BASE_DIR, 'db.sqlite3')),
         }
     }
-else:
+elif DB_ENGINE in ('postgres', 'postgresql'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': config('DB_NAME', default='smartoptions'),
             'USER': config('DB_USER', default='postgres'),
-            'PASSWORD': config('DB_PASSWORD', default='Syntel@01'),
-            'HOST': config('DB_HOST', default='db'),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': DB_HOST,
             'PORT': config('DB_PORT', default='5432'),
         }
     }
+else:
+    raise ValueError(f"Unsupported DB_ENGINE '{DB_ENGINE}'. Use 'sqlite' or 'postgres'.")
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -121,7 +127,7 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Finnhub API Configuration
-FINNHUB_API_KEY = config('FINNHUB_API_KEY', default='d46ci01r01qgc9es6aggd46ci01r01qgc9es6ah0')
+FINNHUB_API_KEY = config('FINNHUB_API_KEY', default='')
 
 # Debug Toolbar
 if DEBUG:

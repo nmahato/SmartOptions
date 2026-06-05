@@ -2,18 +2,19 @@ import requests
 import psycopg2
 from datetime import datetime
 import time
+from decouple import config
 
 # Finnhub API configuration
-API_KEY = "d46ci01r01qgc9es6aggd46ci01r01qgc9es6ah0"  # Get free key from https://finnhub.io/
+API_KEY = config("FINNHUB_API_KEY", default="")
 BASE_URL = "https://finnhub.io/api/v1"
 
 # Database connection
 conn = psycopg2.connect(
-    host="localhost",
-    port="5433",
-    database="smartoptions", 
-    user="postgres",
-    password="Syntel@01"
+    host=config("DB_HOST", default="localhost"),
+    port=config("DB_PORT", default="5432"),
+    database=config("DB_NAME", default="smartoptions"),
+    user=config("DB_USER", default="postgres"),
+    password=config("DB_PASSWORD", default="")
 )
 cur = conn.cursor()
 
@@ -99,7 +100,7 @@ if __name__ == "__main__":
         'JPM', 'GS', 'V', 'MA', 'WMT', 'HD', 'PG', 'JNJ', 'SPY', 'QQQ'
     ]
     
-    if API_KEY == "your_finnhub_api_key":
+    if not API_KEY or API_KEY == "your_finnhub_api_key":
         print("Please set your Finnhub API key in the script")
         print("Get a free key at: https://finnhub.io/register")
     else:

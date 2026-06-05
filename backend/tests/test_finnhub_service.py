@@ -8,7 +8,7 @@ from apps.market_data.finnhub_service import FinnhubService
 class TestFinnhubService(TestCase):
     
     def setUp(self):
-        self.api_key = 'd46ci01r01qgc9es6aggd46ci01r01qgc9es6ah0'
+        self.api_key = 'test_key'
         self.service = FinnhubService(api_key=self.api_key)
     
     def test_init_with_api_key(self):

@@ -24,16 +24,18 @@ pip install -r requirements.txt
 ```
 
 ### 4. Setup Local Database
-Make sure PostgreSQL is running and create database:
+Make sure PostgreSQL is running and create the database if it does not already exist:
 ```sql
 CREATE DATABASE smartoptions;
 ```
 
 ### 5. Configure Environment
-The `.env.local` file is already configured for local development:
-- Database: `smartoptions` on localhost:5432
+The project reads `.env` from the repository root. For local development:
+- Database: `smartoptions` on `localhost:5432`
 - User: `postgres`
-- Update `DB_PASSWORD` in `.env.local` if needed
+- Update `DB_PASSWORD` in `.env` if needed
+
+If you use the Docker Compose Postgres service, keep the container database port at `5432` and connect from the host through `localhost:5433`.
 
 ### 6. Run Migrations
 ```bash
@@ -67,7 +69,7 @@ python manage.py runserver
 
 ### Database Connection Issues
 1. Ensure PostgreSQL is running
-2. Check database credentials in `.env.local`
+2. Check database credentials in `.env`
 3. Verify database `smartoptions` exists
 
 ### Missing Dependencies

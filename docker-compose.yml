@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: smartoptions
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Syntel@01
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-smartoptions_dev_password}
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./Database/Script.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,9 +23,10 @@ services:
       - "5678:5678"
     environment:
       - DEBUG=1
+      - DB_ENGINE=postgres
       - DB_NAME=smartoptions
       - DB_USER=postgres
-      - DB_PASSWORD=Syntel@01
+      - DB_PASSWORD=${DB_PASSWORD:-smartoptions_dev_password}
       - DB_HOST=db
       - DB_PORT=5432
       - REDIS_URL=redis://redis:6379/0
@@ -42,8 +43,9 @@ services:
     command: celery -A smartoptions worker -l info
     environment:
       - DB_NAME=smartoptions
+      - DB_ENGINE=postgres
       - DB_USER=postgres
-      - DB_PASSWORD=Syntel@01
+      - DB_PASSWORD=${DB_PASSWORD:-smartoptions_dev_password}
       - DB_HOST=db
       - DB_PORT=5432
       - REDIS_URL=redis://redis:6379/0

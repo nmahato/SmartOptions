@@ -1,14 +1,15 @@
 import yfinance as yf
 import psycopg2
 from datetime import datetime
+from decouple import config
 
 # Database connection
 conn = psycopg2.connect(
-    host="localhost",
-    port="5433",
-    database="smartoptions",
-    user="postgres",
-    password="Syntel@01"
+    host=config("DB_HOST", default="localhost"),
+    port=config("DB_PORT", default="5432"),
+    database=config("DB_NAME", default="smartoptions"),
+    user=config("DB_USER", default="postgres"),
+    password=config("DB_PASSWORD", default="")
 )
 cur = conn.cursor()
 
