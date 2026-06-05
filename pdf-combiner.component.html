@@ -1,0 +1,20 @@
+<div class="utility-container">
+  <h2>Combine PDF Files</h2>
+  <p>Select multiple PDF files, re-arrange them by dragging, and combine them into a single file.</p>
+
+  <div class="file-input-container">
+    <label for="file-upload" class="custom-file-upload">Select PDFs</label>
+    <input id="file-upload" type="file" (change)="onFileSelected($event)" accept=".pdf" multiple>
+  </div>
+
+  <div cdkDropList (cdkDropListDropped)="drop($event)" class="file-list">
+    <div *ngFor="let file of selectedFiles" cdkDrag class="file-item">
+      <span class="file-name">{{ file.name }}</span>
+      <button (click)="removeFile(file)" class="remove-btn">&times;</button>
+    </div>
+  </div>
+
+  <div *ngIf="selectedFiles.length > 0">
+    <button (click)="combinePdfs()" class="action-btn">Combine PDFs</button>
+  </div>
+</div>

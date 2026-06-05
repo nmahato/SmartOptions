@@ -1,11 +1,11 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import UserRegistrationSerializer, UserLoginSerializer
+from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserSerializer
 
 @swagger_auto_schema(
     method='post',
@@ -60,3 +60,10 @@ def login(request):
             'access': str(refresh.access_token),
         })
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_info(request):
+    """Get current user information"""
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)

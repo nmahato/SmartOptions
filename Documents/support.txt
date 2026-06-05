@@ -1,0 +1,31 @@
+# From backend directory
+python manage.py test tests.test_finnhub_service
+
+# Or run all tests
+python manage.py test
+
+
+3. Debug Methods
+VS Code (Recommended):
+
+Set breakpoints in test file
+
+Press F5 → Select "Django Tests"
+
+Debugger stops at breakpoints
+# Run with verbose output
+python manage.py test tests.test_finnhub_service -v 2
+
+# Run specific test
+python manage.py test tests.test_finnhub_service.TestFinnhubService.test_get_quote_success
+
+# Debug with pdb
+python -m pdb manage.py test tests.test_finnhub_service
+def test_get_quote_success(self, mock_cache_set, mock_cache_get, mock_requests):
+    print(f"Testing with API key: {self.api_key}")
+    result = self.service.get_quote('AAPL')
+    print(f"Result: {result}")
+    self.assertIsNotNone(result)
+
+# Run tests in container
+docker-compose exec backend python manage.py test tests.test_finnhub_service

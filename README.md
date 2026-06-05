@@ -15,7 +15,7 @@ A containerized, full-stack trading analytics platform for designing, visualizin
 ## Tech Stack
 
 - **Backend**: Django REST Framework, PostgreSQL, Redis, Celery
-- **Frontend**: React Native with Expo
+- **Frontend**: Angular 17
 - **Containerization**: Docker Compose
 - **Deployment**: Cloud-ready (Render, AWS, Azure)
 
@@ -34,7 +34,7 @@ A containerized, full-stack trading analytics platform for designing, visualizin
 
 3. **Access the application**
    - Backend API: http://localhost:8000
-   - Frontend: http://localhost:19006
+   - Frontend: http://localhost:4200
    - Admin Panel: http://localhost:8000/admin
 
 ## Development Setup
@@ -50,9 +50,16 @@ python manage.py runserver
 
 ### Frontend Setup
 ```bash
-cd frontend
+cd angular-frontend
 npm install
 npm start
+```
+
+### Production Build
+```bash
+cd angular-frontend
+npm run build
+# Build output: dist/smartoptions-angular/
 ```
 
 ## API Endpoints

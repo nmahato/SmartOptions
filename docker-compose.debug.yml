@@ -34,24 +34,7 @@ services:
       - redis
     volumes:
       - ./backend:/app
-    # Uncomment for debugging:
-    # command: python manage_debug.py runserver 0.0.0.0:8000
-
-  celery:
-    build: ./backend
-    command: celery -A smartoptions worker -l info
-    environment:
-      - DB_NAME=smartoptions
-      - DB_USER=postgres
-      - DB_PASSWORD=Syntel@01
-      - DB_HOST=db
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - db
-      - redis
-    volumes:
-      - ./backend:/app
+    command: python debug_server.py
 
   angular-frontend:
     build: ./angular-frontend

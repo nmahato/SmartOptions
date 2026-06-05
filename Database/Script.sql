@@ -1,7 +1,10 @@
+-- Create schema
+CREATE SCHEMA IF NOT EXISTS dev;
 SET search_path TO dev;
 
+-- Create user
 CREATE USER user05 WITH PASSWORD 'Forest@21163';
-GRANT ALL PRIVILEGES ON DATABASE optionai TO user05;
+GRANT ALL PRIVILEGES ON DATABASE smartoptions TO user05;
 GRANT USAGE, CREATE ON SCHEMA dev TO user05;
 
 

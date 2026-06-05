@@ -587,6 +587,7 @@ export class OptimizerComponent implements OnInit, OnDestroy {
   stockPrice: StockPrice | null = null;
   optimizedStrategies: StrategyTemplate[] = [];
   loading = false;
+  private optimizationTimeout: any;
   
   criteria: OptimizationCriteria = {
     outlook: 'bullish',
@@ -611,12 +612,15 @@ export class OptimizerComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
+    if (this.optimizationTimeout) {
+      clearTimeout(this.optimizationTimeout);
+    }
   }
 
   loadMarketData() {
     const priceSub = this.marketData.getStockPrice(this.selectedStock).subscribe(price => {
       this.stockPrice = price || null;
-      if (price) {
+      if (price && this.optimizedStrategies.length === 0) {
         this.optimizeStrategies();
       }
     });
@@ -634,18 +638,29 @@ export class OptimizerComponent implements OnInit, OnDestroy {
   optimizeStrategies() {
     if (!this.stockPrice) return;
     
+    // Clear existing timeout to debounce rapid calls
+    if (this.optimizationTimeout) {
+      clearTimeout(this.optimizationTimeout);
+    }
+    
     this.loading = true;
     
-    setTimeout(() => {
-      this.marketData.getOptionsChain(this.selectedStock).subscribe(options => {
-        this.optimizedStrategies = this.optimizer.optimizeStrategy(
-          this.criteria,
-          this.stockPrice!.price,
-          options
-        );
-        this.loading = false;
+    this.optimizationTimeout = setTimeout(() => {
+      this.marketData.getOptionsChain(this.selectedStock).subscribe({
+        next: (options) => {
+          this.optimizedStrategies = this.optimizer.optimizeStrategy(
+            this.criteria,
+            this.stockPrice!.price,
+            options
+          );
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error optimizing strategies:', error);
+          this.loading = false;
+        }
       });
-    }, 1000);
+    }, 500);
   }
 
   implementStrategy(strategy: StrategyTemplate) {

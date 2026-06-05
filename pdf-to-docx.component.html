@@ -1,0 +1,15 @@
+<div class="utility-container">
+  <h2>Convert PDF to DOCX</h2>
+  <p>Select a PDF file to convert it into a DOCX document.</p>
+
+  <div class="file-input-container">
+    <label for="file-upload" class="custom-file-upload">Select PDF</label>
+    <input id="file-upload" type="file" (change)="onFileSelected($event)" accept=".pdf">
+  </div>
+
+  <div *ngIf="selectedFile" class="file-list">
+      <div class="file-item">{{ selectedFile.name }}</div>
+  </div>
+
+  <button *ngIf="selectedFile" (click)="convertPdf()" class="action-btn">Convert to DOCX</button>
+</div>

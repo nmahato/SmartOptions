@@ -21,6 +21,8 @@ class UserStrategyViewSet(viewsets.ModelViewSet):
     serializer_class = UserStrategySerializer
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return UserStrategy.objects.none()
         return UserStrategy.objects.filter(user=self.request.user)
     
     @swagger_auto_schema(

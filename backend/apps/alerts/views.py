@@ -9,4 +9,6 @@ class AlertViewSet(viewsets.ModelViewSet):
     serializer_class = AlertSerializer
     
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Alert.objects.none()
         return Alert.objects.filter(user=self.request.user)

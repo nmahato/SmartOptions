@@ -1,6 +1,10 @@
 {
   "name": "smartoptions-angular",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18.13.0 <22.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0 --port 4200",

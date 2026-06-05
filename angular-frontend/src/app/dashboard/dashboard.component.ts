@@ -106,6 +106,40 @@ import { ApiService } from '../api.service';
           <div class="card action-card">
             <div class="card-icon">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Market Data</h3>
+            <p>Live stock quotes and market information powered by Finnhub</p>
+            <button class="btn" (click)="goToMarketData()">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              View Market Data
+            </button>
+          </div>
+
+          <div class="card action-card">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 18L9 13L13 15L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 7H20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Tesla Forecast</h3>
+            <p>Same-day TSLA forecast with options-implied range, key levels, and a projected path graph</p>
+            <button class="btn" (click)="goToTeslaForecast()">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 18L9 13L13 15L20 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 7H20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Open Forecast
+            </button>
+          </div>
+          
+          <div class="card action-card">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -418,6 +452,14 @@ export class DashboardComponent implements OnInit {
   
   goToOptionsTable() {
     this.router.navigate(['/options-table']);
+  }
+  
+  goToMarketData() {
+    this.router.navigate(['/market-data']);
+  }
+
+  goToTeslaForecast() {
+    this.router.navigate(['/tesla-forecast']);
   }
   
   logout() {

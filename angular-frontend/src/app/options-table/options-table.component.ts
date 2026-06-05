@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { MarketDataService, OptionData, StockPrice } from '../services/market-data.service';
 import { Subscription } from 'rxjs';
 
@@ -51,14 +52,27 @@ import { Subscription } from 'rxjs';
         <div class="controls">
           <div class="stock-selector">
             <label class="form-label">Stock Symbol</label>
-            <select class="form-control" [(ngModel)]="selectedStock" (change)="onStockChange()">
-              <option value="AAPL">AAPL</option>
-              <option value="TSLA">TSLA</option>
-              <option value="SPY">SPY</option>
-              <option value="QQQ">QQQ</option>
-              <option value="MSFT">MSFT</option>
-              <option value="GOOGL">GOOGL</option>
-            </select>
+            <div class="search-container">
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="searchTerm" 
+                (input)="onSearchChange()"
+                (focus)="showDropdown = true"
+                (blur)="hideDropdown()"
+                placeholder="Search stocks..."
+              >
+              <div class="dropdown-list" *ngIf="showDropdown && filteredStocks.length > 0">
+                <div 
+                  *ngFor="let stock of filteredStocks" 
+                  class="dropdown-item"
+                  (mousedown)="selectStock(stock)"
+                >
+                  <strong>{{ stock.symbol }}</strong> - {{ stock.company_name }}
+                  <span class="price">\${{ stock.last_price }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           
           <div class="stock-info" *ngIf="stockPrice">
@@ -224,7 +238,49 @@ import { Subscription } from 'rxjs';
     }
     
     .stock-selector {
-      min-width: 200px;
+      min-width: 300px;
+      position: relative;
+    }
+    
+    .search-container {
+      position: relative;
+    }
+    
+    .dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    
+    .dropdown-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid #f7fafc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .dropdown-item:hover {
+      background: rgba(102, 126, 234, 0.1);
+    }
+    
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .dropdown-item .price {
+      color: #667eea;
+      font-weight: 600;
+      font-size: 14px;
     }
     
     .stock-info {
@@ -390,16 +446,66 @@ export class OptionsTableComponent implements OnInit, OnDestroy {
   selectedStock = 'AAPL';
   stockPrice: StockPrice | null = null;
   optionsChain: OptionData[] = [];
+  availableStocks: any[] = [];
+  filteredStocks: any[] = [];
+  searchTerm = '';
+  showDropdown = false;
   
   private subscriptions: Subscription[] = [];
 
   constructor(
     private router: Router,
-    private marketData: MarketDataService
+    private marketData: MarketDataService,
+    private http: HttpClient
   ) {}
 
   ngOnInit() {
+    this.loadStocks();
     this.loadMarketData();
+  }
+  
+  loadStocks() {
+    this.http.get<any[]>('http://localhost:8000/api/options/stocks-list/').subscribe({
+      next: (stocks) => {
+        this.availableStocks = stocks;
+        this.filteredStocks = stocks.slice(0, 10);
+        if (stocks.length > 0 && !this.selectedStock) {
+          this.selectedStock = stocks[0].symbol;
+          this.searchTerm = stocks[0].symbol;
+        }
+      },
+      error: (error) => console.error('Error loading stocks:', error)
+    });
+  }
+  
+  onSearchChange() {
+    if (!this.searchTerm) {
+      this.filteredStocks = this.availableStocks.slice(0, 10);
+      return;
+    }
+    
+    const term = this.searchTerm.toLowerCase();
+    this.filteredStocks = this.availableStocks
+      .filter(stock => 
+        stock.symbol.toLowerCase().includes(term) || 
+        stock.company_name.toLowerCase().includes(term)
+      )
+      .slice(0, 10);
+    
+    this.showDropdown = true;
+  }
+  
+  selectStock(stock: any) {
+    this.selectedStock = stock.symbol;
+    this.searchTerm = stock.symbol;
+    this.showDropdown = false;
+    this.onStockChange();
+  }
+  
+  hideDropdown() {
+    setTimeout(() => {
+      this.showDropdown = false;
+    }, 200);
   }
 
   ngOnDestroy() {

@@ -4,7 +4,7 @@ from decouple import config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-key-for-dev')
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = True  # Force debug mode
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
+    'debug_toolbar',
     'apps.authentication',
     'apps.strategies',
     'apps.options',
@@ -26,6 +27,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -56,16 +58,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'smartoptions.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='smartoptions'),
-        'USER': config('DB_USER', default='postgres'),
-        'PASSWORD': config('DB_PASSWORD', default='Syntel@01'),
-        'HOST': config('DB_HOST', default='db'),
-        'PORT': config('DB_PORT', default='5432'),
+# Use SQLite for local development, PostgreSQL for production
+if config('DB_HOST', default='localhost') == 'localhost':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': config('DB_NAME', default='smartoptions'),
+            'USER': config('DB_USER', default='postgres'),
+            'PASSWORD': config('DB_PASSWORD', default='Syntel@01'),
+            'HOST': config('DB_HOST', default='db'),
+            'PORT': config('DB_PORT', default='5432'),
+        }
+    }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -86,6 +97,18 @@ CELERY_BROKER_URL = config('REDIS_URL', default='redis://redis:6379/0')
 CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://redis:6379/0')
 
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -96,3 +119,14 @@ AUTH_USER_MODEL = 'authentication.User'
 
 STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Finnhub API Configuration
+FINNHUB_API_KEY = config('FINNHUB_API_KEY', default='d46ci01r01qgc9es6aggd46ci01r01qgc9es6ah0')
+
+# Debug Toolbar
+if DEBUG:
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        'localhost',
+        '0.0.0.0',
+    ]
