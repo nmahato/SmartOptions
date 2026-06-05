@@ -1,17 +1,15 @@
 import yfinance as yf
-import psycopg2
-from datetime import datetime
-from decouple import config
+import os
+import sys
 
-# Database connection
-conn = psycopg2.connect(
-    host=config("DB_HOST", default="localhost"),
-    port=config("DB_PORT", default="5432"),
-    database=config("DB_NAME", default="smartoptions"),
-    user=config("DB_USER", default="postgres"),
-    password=config("DB_PASSWORD", default="")
-)
-cur = conn.cursor()
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "smartoptions.settings")
+
+import django
+
+django.setup()
+
+from apps.options.models import Stock
 
 # Stock symbols
 symbols = ['AAPL', 'TSLA', 'SPY', 'QQQ', 'MSFT', 'GOOGL']
@@ -28,22 +26,20 @@ for symbol in symbols:
         last_price = hist['Close'].iloc[-1] if not hist.empty else 0
         volume = hist['Volume'].iloc[-1] if not hist.empty else 0
         
-        cur.execute("""
-            INSERT INTO dev.stocks (symbol, company_name, exchange, sector, last_price, volume, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (symbol) DO UPDATE SET
-                company_name = EXCLUDED.company_name,
-                last_price = EXCLUDED.last_price,
-                volume = EXCLUDED.volume,
-                updated_at = EXCLUDED.updated_at
-        """, (symbol, company_name, exchange, sector, float(last_price), int(volume), datetime.now()))
+        Stock.objects.update_or_create(
+            symbol=symbol,
+            defaults={
+                "company_name": company_name,
+                "exchange": exchange,
+                "sector": sector,
+                "last_price": float(last_price),
+                "volume": int(volume),
+            },
+        )
         
         print(f"Updated {symbol}: ${last_price:.2f}")
         
     except Exception as e:
         print(f"Error updating {symbol}: {e}")
 
-conn.commit()
-cur.close()
-conn.close()
 print("Stock data updated successfully!")

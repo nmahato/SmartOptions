@@ -2,8 +2,8 @@
 
 ## Prerequisites
 1. **Python 3.8+** installed
-2. **PostgreSQL** running locally
-3. **Redis** running locally (optional for basic functionality)
+2. No external database is required. The backend uses SQLite by default.
+3. Redis is optional for background workers; basic API usage does not require it.
 
 ## Quick Setup
 
@@ -24,18 +24,14 @@ pip install -r requirements.txt
 ```
 
 ### 4. Setup Local Database
-Make sure PostgreSQL is running and create the database if it does not already exist:
-```sql
-CREATE DATABASE smartoptions;
-```
+SQLite is configured by default and Django creates the database file when migrations run.
 
 ### 5. Configure Environment
 The project reads `.env` from the repository root. For local development:
-- Database: `smartoptions` on `localhost:5432`
-- User: `postgres`
-- Update `DB_PASSWORD` in `.env` if needed
+- Database engine: `sqlite`
+- Database file: `backend/db.sqlite3`
 
-If you use the Docker Compose Postgres service, keep the container database port at `5432` and connect from the host through `localhost:5433`.
+PostgreSQL is still supported if you explicitly set `DB_ENGINE=postgres` and provide the usual `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, and `DB_PORT` values.
 
 ### 6. Run Migrations
 ```bash
@@ -68,9 +64,9 @@ python manage.py runserver
 ## Troubleshooting
 
 ### Database Connection Issues
-1. Ensure PostgreSQL is running
-2. Check database credentials in `.env`
-3. Verify database `smartoptions` exists
+1. Check `DB_ENGINE` in `.env`
+2. For SQLite, delete `backend/db.sqlite3` and rerun migrations if the local database gets corrupted
+3. For PostgreSQL, verify the host, credentials, and database name
 
 ### Missing Dependencies
 ```bash

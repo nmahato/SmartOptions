@@ -1,21 +1,4 @@
 services:
-  db:
-    image: postgres:18
-    environment:
-      POSTGRES_DB: smartoptions
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-smartoptions_dev_password}
-    volumes:
-      - postgres_data:/var/lib/postgresql
-      - ./Database/Script.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5433:5432"
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
   backend:
     build: ./backend
     ports:
@@ -23,18 +6,11 @@ services:
       - "5678:5678"
     environment:
       - DEBUG=1
-      - DB_ENGINE=postgres
-      - DB_NAME=smartoptions
-      - DB_USER=postgres
-      - DB_PASSWORD=${DB_PASSWORD:-smartoptions_dev_password}
-      - DB_HOST=db
-      - DB_PORT=5432
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - db
-      - redis
+      - DB_ENGINE=sqlite
+      - SQLITE_NAME=/app/data/db.sqlite3
     volumes:
       - ./backend:/app
+      - sqlite_data:/app/data
     command: python debug_server.py
 
   angular-frontend:
@@ -45,4 +21,4 @@ services:
       - backend
 
 volumes:
-  postgres_data:
+  sqlite_data:

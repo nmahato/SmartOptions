@@ -1,22 +1,22 @@
 import requests
-import psycopg2
+import os
+import sys
 from datetime import datetime
 import time
 from decouple import config
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "smartoptions.settings")
+
+import django
+
+django.setup()
+
+from apps.options.models import Stock
+
 # Finnhub API configuration
 API_KEY = config("FINNHUB_API_KEY", default="")
 BASE_URL = "https://finnhub.io/api/v1"
-
-# Database connection
-conn = psycopg2.connect(
-    host=config("DB_HOST", default="localhost"),
-    port=config("DB_PORT", default="5432"),
-    database=config("DB_NAME", default="smartoptions"),
-    user=config("DB_USER", default="postgres"),
-    password=config("DB_PASSWORD", default="")
-)
-cur = conn.cursor()
 
 def get_stock_quote(symbol):
     """Get real-time stock quote from Finnhub"""
@@ -64,32 +64,26 @@ def load_stock_data(symbols):
             last_price = float(quote['c'])  # Current price
             volume = int(quote.get('v', 0))  # Volume
             
-            # Insert/update database
-            cur.execute("""
-                INSERT INTO dev.stocks (symbol, company_name, exchange, sector, last_price, volume, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (symbol) DO UPDATE SET
-                    company_name = EXCLUDED.company_name,
-                    exchange = EXCLUDED.exchange,
-                    sector = EXCLUDED.sector,
-                    last_price = EXCLUDED.last_price,
-                    volume = EXCLUDED.volume,
-                    updated_at = EXCLUDED.updated_at
-            """, (symbol, company_name, exchange, sector, last_price, volume, datetime.now()))
+            Stock.objects.update_or_create(
+                symbol=symbol,
+                defaults={
+                    "company_name": company_name,
+                    "exchange": exchange,
+                    "sector": sector,
+                    "last_price": last_price,
+                    "volume": volume,
+                },
+            )
             
             print(f"Updated {symbol}: ${last_price:.2f}")
             
             # Rate limiting (60 calls/minute for free tier)
             time.sleep(1)
             
-            if i % 10 == 0:
-                conn.commit()
-                
         except Exception as e:
             print(f"Error processing {symbol}: {e}")
             continue
     
-    conn.commit()
     print("Stock data loading complete!")
 
 if __name__ == "__main__":
@@ -105,6 +99,3 @@ if __name__ == "__main__":
         print("Get a free key at: https://finnhub.io/register")
     else:
         load_stock_data(symbols)
-    
-    cur.close()
-    conn.close()

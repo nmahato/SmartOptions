@@ -4,8 +4,8 @@ from decouple import config
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-key-for-dev')
-DEBUG = True  # Force debug mode
-ALLOWED_HOSTS = ['*']
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,7 +18,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'drf_yasg',
-    'debug_toolbar',
     'apps.authentication',
     'apps.strategies',
     'apps.options',
@@ -27,7 +26,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -37,6 +35,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 ROOT_URLCONF = 'smartoptions.urls'
 
@@ -58,16 +60,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'smartoptions.wsgi.application'
 
-# Use SQLite when explicitly requested or when no database host is configured.
-# Use PostgreSQL for local Docker, local Postgres, and production.
+# Use SQLite by default. PostgreSQL remains available when explicitly requested.
 DB_HOST = config('DB_HOST', default='')
-DB_ENGINE = config('DB_ENGINE', default='postgres' if DB_HOST else 'sqlite').lower()
+DB_ENGINE = config('DB_ENGINE', default='sqlite').lower()
 
 if DB_ENGINE in ('sqlite', 'sqlite3'):
+    sqlite_name = config('SQLITE_NAME', default=os.path.join(BASE_DIR, 'db.sqlite3'))
+    if not os.path.isabs(sqlite_name):
+        sqlite_name = os.path.join(BASE_DIR, sqlite_name)
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': config('SQLITE_NAME', default=os.path.join(BASE_DIR, 'db.sqlite3')),
+            'NAME': sqlite_name,
         }
     }
 elif DB_ENGINE in ('postgres', 'postgresql'):
@@ -99,8 +104,8 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-CELERY_BROKER_URL = config('REDIS_URL', default='redis://redis:6379/0')
-CELERY_RESULT_BACKEND = config('REDIS_URL', default='redis://redis:6379/0')
+CELERY_BROKER_URL = config('REDIS_URL', default='memory://')
+CELERY_RESULT_BACKEND = config('REDIS_URL', default='cache+memory://')
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True

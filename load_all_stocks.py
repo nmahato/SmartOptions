@@ -1,23 +1,21 @@
 import yfinance as yf
-import psycopg2
-from datetime import datetime
-from decouple import config
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend"))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "smartoptions.settings")
+
+import django
+
+django.setup()
+
+from apps.options.models import Stock
 
 # Popular stocks list
 stocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX', 'SPY', 'QQQ', 
           'AMD', 'INTC', 'CRM', 'ORCL', 'ADBE', 'PYPL', 'DIS', 'BA', 'JPM', 'GS',
           'V', 'MA', 'WMT', 'HD', 'PG', 'JNJ', 'UNH', 'VZ', 'T', 'KO',
           'PFE', 'MRK', 'XOM', 'CVX', 'BAC', 'WFC', 'C', 'GE', 'IBM', 'CSCO']
-
-# Database connection
-conn = psycopg2.connect(
-    host=config("DB_HOST", default="localhost"),
-    port=config("DB_PORT", default="5432"),
-    database=config("DB_NAME", default="smartoptions"),
-    user=config("DB_USER", default="postgres"),
-    password=config("DB_PASSWORD", default="")
-)
-cur = conn.cursor()
 
 print(f"Loading {len(stocks)} popular stocks...")
 
@@ -36,27 +34,22 @@ for i, symbol in enumerate(stocks):
         last_price = float(hist['Close'].iloc[-1])
         volume = int(hist['Volume'].iloc[-1])
         
-        cur.execute("""
-            INSERT INTO dev.stocks (symbol, company_name, exchange, sector, last_price, volume, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (symbol) DO UPDATE SET
-                company_name = EXCLUDED.company_name,
-                exchange = EXCLUDED.exchange,
-                sector = EXCLUDED.sector,
-                last_price = EXCLUDED.last_price,
-                volume = EXCLUDED.volume,
-                updated_at = EXCLUDED.updated_at
-        """, (symbol, company_name, exchange, sector, last_price, volume, datetime.now()))
+        Stock.objects.update_or_create(
+            symbol=symbol,
+            defaults={
+                "company_name": company_name,
+                "exchange": exchange,
+                "sector": sector,
+                "last_price": last_price,
+                "volume": volume,
+            },
+        )
         
         if i % 10 == 0:
-            conn.commit()
             print(f"Processed {i+1}/{len(stocks)} stocks...")
             
     except Exception as e:
         print(f"Error with {symbol}: {e}")
         continue
 
-conn.commit()
-cur.close()
-conn.close()
 print("Stock loading complete!")

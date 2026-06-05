@@ -20,5 +20,5 @@ EXPOSE 5678
 # Healthcheck to make sure the container is running correctly
 HEALTHCHECK CMD curl --fail http://localhost:8000/ || exit 1
 
-# Run the application with Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "smartoptions.wsgi"]
+# Run migrations before starting the application so SQLite is initialized.
+CMD ["sh", "-c", "python manage.py migrate && gunicorn --bind 0.0.0.0:8000 smartoptions.wsgi"]
